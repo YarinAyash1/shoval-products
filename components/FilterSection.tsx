@@ -85,6 +85,7 @@ function FilterFormContent({
                     placeholder="חפש לפי שם מוצר..."
                     value={searchTerm}
                     onChange={(e) => handleFilterChange('search', e.target.value)}
+                    autoFocus={false}
                 />
             </div>
 
@@ -309,7 +310,12 @@ export function FilterSection({
                             <Filter className="h-4 w-4" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="bottom" className="h-[85vh] overflow-y-auto pb-20">
+                    <SheetContent 
+                        side="bottom" 
+                        className="h-[85vh] overflow-y-auto pb-20" 
+                        autoFocus={false}
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
                         <SheetHeader>
                             <SheetTitle>סינון מוצרים</SheetTitle>
                         </SheetHeader>

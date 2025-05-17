@@ -50,13 +50,13 @@ function ProductCard({
     <div className="border rounded-lg p-4 mb-3 bg-card shadow-sm flex flex-col gap-2">
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-16 h-16 rounded-md bg-muted flex items-center justify-center overflow-hidden border">
-          {product.image_urls ? (
+          {product.image_urls && product.image_urls[0] ? (
             <Image
               src={product.image_urls[0]}
               alt={product.name}
               width={64}
               height={64}
-              className="object-cover w-full h-full"
+              className="object-contain w-full h-full"
             />
           ) : (
             <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -209,13 +209,13 @@ export default function ProductsPage() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden border">
-                        {product.image_urls[0] ? (
+                        {product.image_urls && product.image_urls[0] ? (
                           <Image
                             src={product.image_urls[0]}
                             alt={product.name}
                             width={48}
                             height={48}
-                            className="object-cover w-full h-full"
+                            className="object-contain w-full h-full"
                           />
                         ) : (
                           <ImageIcon className="w-6 h-6 text-muted-foreground" />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronRight, Share2 } from 'lucide-react';
+import { ChevronRight, Share2, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Card, 
@@ -11,7 +11,7 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { getProductById, type Product } from '@/lib/supabase';
+import { getProductById, getSettings, type Product, type Settings } from '@/lib/supabase';
 
 interface ProductDetailsProps {
   id: string;
@@ -19,28 +19,36 @@ interface ProductDetailsProps {
 
 export function ProductDetails({ id }: ProductDetailsProps) {
   const [product, setProduct] = useState<Product | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentImage, setCurrentImage] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
-        const fetchedProduct = await getProductById(id);
+        // Fetch product and settings in parallel
+        const [fetchedProduct, fetchedSettings] = await Promise.all([
+          getProductById(id),
+          getSettings()
+        ]);
+        
         if (!fetchedProduct) {
           setError('המוצר המבוקש לא נמצא');
         } else {
           setProduct(fetchedProduct);
         }
+        
+        setSettings(fetchedSettings);
       } catch (err) {
-        console.error('Error fetching product:', err);
+        console.error('Error fetching data:', err);
         setError('אירעה שגיאה בטעינת המוצר');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const handleShare = () => {
@@ -100,7 +108,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
               <Image
                 src={product.image_urls[currentImage]}
                 alt={product.name}
-                className="object-cover w-full h-full"
+                className="object-contain w-full h-full"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
@@ -129,7 +137,7 @@ export function ProductDetails({ id }: ProductDetailsProps) {
                     alt={`${product.name} - תמונה ${index + 1}`}
                     fill
                     sizes="80px"
-                    className="object-cover w-full h-full"
+                    className="object-contain w-full h-full"
                   />
                 </button>
               ))}
@@ -186,8 +194,19 @@ export function ProductDetails({ id }: ProductDetailsProps) {
 
           {/* Call to Action */}
           <div className="pt-4">
-            <Button className="w-full" size="lg">
-              יצירת קשר להזמנה
+            <Button 
+              className="w-full" 
+              size="lg" 
+              asChild={!!settings?.contact_phone}
+            >
+              {settings?.contact_phone ? (
+                <a href={`tel:${settings.contact_phone}`} className="flex items-center justify-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  יצירת קשר להזמנה
+                </a>
+              ) : (
+                <span>יצירת קשר להזמנה</span>
+              )}
             </Button>
           </div>
         </div>

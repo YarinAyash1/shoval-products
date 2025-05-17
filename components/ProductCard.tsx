@@ -25,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Image
               src={product.image_urls[0]}
               alt={product.name}
-              className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+              className="object-contain w-full h-full transition-transform duration-300 hover:scale-105"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={false}

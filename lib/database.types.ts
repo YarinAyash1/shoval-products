@@ -41,6 +41,23 @@ export type Database = {
           created_at?: string
         }
       }
+      settings: {
+        Row: {
+          id: string
+          contact_phone: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          contact_phone?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          contact_phone?: string | null
+          created_at?: string
+        }
+      }
       categories: {
         Row: {
           id: string

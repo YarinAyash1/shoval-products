@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for active session on component mount
     const checkSession = async () => {
       try {
-        console.log('Checking auth session...');
+
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw error;
         }
         
-        console.log('Session check result:', !!data.session);
+
         setSession(data.session);
         setUser(data.session?.user || null);
       } catch (error) {
@@ -46,8 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set up auth state change listener
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, newSession) => {
-          console.log('Auth state changed:', event);
-          console.log('New session exists:', !!newSession);
           setSession(newSession);
           setUser(newSession?.user || null);
         }

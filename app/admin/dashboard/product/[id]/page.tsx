@@ -4,7 +4,6 @@ export const runtime = 'edge';
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { 
   getProductById, 
   updateProduct, 
@@ -21,16 +20,6 @@ import {
   type Variable
 } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Card,
   CardContent,
@@ -38,26 +27,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
-import { Plus, X, Upload, ArrowRight, Trash } from 'lucide-react';
+import { ArrowRight, Trash } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+
+// Import our custom components
+import {
+  ProductDetails,
+  ProductImageUploader,
+  ProductVariables,
+  DeleteProductDialog
+} from './components';
 
 type PageParams = {
   params: Promise<{ id: string }>;
@@ -330,75 +309,9 @@ export default function ProductFormPage({ params }: PageParams) {
   if (loading) {
     return <div className="text-center py-12">טוען נתונים...</div>;
   }
-
-  // Responsive Table for Variables
-  function ResponsiveVariablesTable({ variables, removeVariable }: { variables: Variable[], removeVariable: (id: string) => void }) {
-    return (
-      <>
-        {/* Desktop Table */}
-        <div className="hidden sm:block">
-          <div className="border rounded-md mt-4 overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>שם המשתנה</TableHead>
-                  <TableHead>ערך</TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {variables.map((variable) => (
-                  <TableRow key={variable.id}>
-                    <TableCell>{variable.name}</TableCell>
-                    <TableCell>{variable.value}</TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeVariable(variable.id)}
-                      >
-                        <X className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-        {/* Mobile Table */}
-        <div className="sm:hidden mt-4 space-y-2">
-          {variables.map((variable) => (
-            <div
-              key={variable.id}
-              className="flex items-center justify-between border rounded-md p-3 bg-muted"
-            >
-              <div>
-                <div className="text-xs text-muted-foreground">שם המשתנה</div>
-                <div className="font-medium">{variable.name}</div>
-                <div className="text-xs text-muted-foreground mt-1">ערך</div>
-                <div>{variable.value}</div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeVariable(variable.id)}
-                className="ml-2"
-                aria-label="מחק משתנה"
-              >
-                <X className="h-5 w-5 text-destructive" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </>
-    );
-  }
   
   return (
-    <div className="space-y-6 px-2 sm:px-0 max-w-2xl mx-auto">
+    <div className="space-y-6 px-2 sm:px-0 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-center sm:text-right">
           {isNewProduct ? 'הוספת מוצר חדש' : 'עריכת מוצר'}
@@ -437,80 +350,20 @@ export default function ProductFormPage({ params }: PageParams) {
             <CardTitle className="text-lg sm:text-xl">פרטי מוצר</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-base">שם המוצר *</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="הזן שם מוצר"
-                  required
-                  className="text-base"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-base">מחיר (₪) *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="הזן מחיר"
-                  required
-                  className="text-base"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="category" className="text-base">קטגוריה</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="text-base">
-                    <SelectValue placeholder="בחר קטגוריה" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">ללא קטגוריה</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="brand" className="text-base">מותג</Label>
-                <Select value={brandId} onValueChange={setBrandId}>
-                  <SelectTrigger className="text-base">
-                    <SelectValue placeholder="בחר מותג" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">ללא מותג</SelectItem>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="description" className="text-base">תיאור המוצר</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="הזן תיאור מוצר"
-                  rows={4}
-                  className="text-base"
-                />
-              </div>
-            </div>
+            <ProductDetails
+              name={name}
+              setName={setName}
+              price={price}
+              setPrice={setPrice}
+              description={description}
+              setDescription={setDescription}
+              categoryId={categoryId}
+              setCategoryId={setCategoryId}
+              brandId={brandId}
+              setBrandId={setBrandId}
+              categories={categories}
+              brands={brands}
+            />
           </CardContent>
         </Card>
         
@@ -519,75 +372,14 @@ export default function ProductFormPage({ params }: PageParams) {
             <CardTitle className="text-lg sm:text-xl">תמונות מוצר</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-3 sm:gap-4">
-                {/* Existing images (edit mode only) */}
-                {!isNewProduct && imageUrls.map((url, index) => (
-                  <div key={`existing-${index}`} className="relative rounded-md overflow-hidden w-[90px] h-[90px] sm:w-[120px] sm:h-[120px]">
-                    <Image
-                      src={url}
-                      alt={`תמונה ${index + 1}`}
-                      width={120}
-                      height={120}
-                      className="object-cover w-full h-full"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-1 right-1 h-6 w-6"
-                      onClick={() => removeExistingImage(index)}
-                      aria-label="מחק תמונה"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-                
-                {/* New images */}
-                {imagePreviewUrls.map((url, index) => (
-                  <div key={`new-${index}`} className="relative rounded-md overflow-hidden w-[90px] h-[90px] sm:w-[120px] sm:h-[120px]">
-                    <Image
-                      src={url}
-                      alt={`תמונה חדשה ${index + 1}`}
-                      width={120}
-                      height={120}
-                      className="object-cover w-full h-full"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-1 right-1 h-6 w-6"
-                      onClick={() => removeNewImage(index)}
-                      aria-label="מחק תמונה"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-                
-                {/* Add image button */}
-                {(isNewProduct ? imagePreviewUrls.length : (imageUrls.length + imagePreviewUrls.length)) < 5 && (
-                  <Label
-                    htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] border-2 border-dashed rounded-md cursor-pointer hover:border-primary transition-colors"
-                  >
-                    <Upload className="h-6 w-6 mb-2" />
-                    <span className="text-xs sm:text-sm">העלה תמונה</span>
-                    <Input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="sr-only"
-                      onChange={handleImageChange}
-                    />
-                  </Label>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">ניתן להעלות עד 5 תמונות. פורמטים נתמכים: JPG, PNG.</p>
-            </div>
+            <ProductImageUploader
+              imageUrls={imageUrls}
+              imagePreviewUrls={imagePreviewUrls}
+              isNewProduct={isNewProduct}
+              removeExistingImage={removeExistingImage}
+              removeNewImage={removeNewImage}
+              handleImageChange={handleImageChange}
+            />
           </CardContent>
         </Card>
         
@@ -596,45 +388,15 @@ export default function ProductFormPage({ params }: PageParams) {
             <CardTitle className="text-lg sm:text-xl">משתני מוצר (אופציונלי)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="variable-name" className="text-base">שם המשתנה</Label>
-                <Input
-                  id="variable-name"
-                  value={newVariableName}
-                  onChange={(e) => setNewVariableName(e.target.value)}
-                  placeholder="לדוגמה: צבע, גודל, משקל"
-                  className="text-base"
-                />
-              </div>
-              
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="variable-value" className="text-base">ערך</Label>
-                <Input
-                  id="variable-value"
-                  value={newVariableValue}
-                  onChange={(e) => setNewVariableValue(e.target.value)}
-                  placeholder="לדוגמה: אדום, XL, 500 גרם"
-                  className="text-base"
-                />
-              </div>
-              
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  onClick={addVariable}
-                  disabled={!newVariableName.trim() || !newVariableValue.trim()}
-                  className="w-full sm:w-auto"
-                >
-                  <Plus className="h-4 w-4 ml-2" />
-                  הוסף
-                </Button>
-              </div>
-            </div>
-            
-            {variables.length > 0 && (
-              <ResponsiveVariablesTable variables={variables} removeVariable={removeVariable} />
-            )}
+            <ProductVariables
+              variables={variables}
+              addVariable={addVariable}
+              removeVariable={removeVariable}
+              newVariableName={newVariableName}
+              setNewVariableName={setNewVariableName}
+              newVariableValue={newVariableValue}
+              setNewVariableValue={setNewVariableValue}
+            />
           </CardContent>
         </Card>
         
@@ -654,25 +416,11 @@ export default function ProductFormPage({ params }: PageParams) {
       </form>
       
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
-            <AlertDialogDescription>
-              פעולה זו תמחק את המוצר לצמיתות ולא ניתן יהיה לשחזר אותו.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ביטול</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-destructive hover:bg-destructive/90"
-              onClick={handleDeleteProduct}
-            >
-              מחק
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteProductDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onDelete={handleDeleteProduct}
+      />
     </div>
   );
 } 

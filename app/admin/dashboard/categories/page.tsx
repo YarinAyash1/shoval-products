@@ -270,7 +270,7 @@ export default function CategoriesPage() {
   const tableCellClass = "py-4 font-medium break-words max-w-xs";
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12 px-2 sm:px-0">
+    <div className="space-y-8  pb-12 px-2 sm:px-0">
       <div className="space-y-0.5">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ניהול קטגוריות ומותגים</h1>
         <p className="text-muted-foreground text-sm sm:text-base">
