@@ -253,7 +253,7 @@ export default function ProductFormPage({ params }: PageParams) {
           image_urls: uploadedImageUrls.filter(Boolean) as string[],
           category_id: categoryId === "none" ? undefined : categoryId,
           brand_id: brandId === "none" ? undefined : brandId,
-          description: description.replace(/\n/g, '<br>')
+          description: description
         });
         
         if (!newProduct) throw new Error('אירעה שגיאה ביצירת המוצר');
@@ -289,7 +289,7 @@ export default function ProductFormPage({ params }: PageParams) {
           image_urls: allImageUrls,
           category_id: categoryId === "none" ? undefined : categoryId,
           brand_id: brandId === "none" ? undefined : brandId,
-          description: description.replace(/\n/g, '<br>')
+          description: description
         });
         
         if (!updatedProduct) throw new Error('אירעה שגיאה בעדכון המוצר');

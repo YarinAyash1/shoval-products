@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -11,9 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Bold, AlignJustify } from 'lucide-react';
 import { type Category, type Brand } from '@/lib/supabase';
+import RichTextEditor from './RichTextEditor';
 
 interface ProductDetailsProps {
   name: string;
@@ -44,42 +42,6 @@ export function ProductDetails({
   categories,
   brands
 }: ProductDetailsProps) {
-  const [textareaRef, setTextareaRef] = useState<HTMLTextAreaElement | null>(null);
-  
-  const addBold = () => {
-    if (!textareaRef) return;
-    
-    const start = textareaRef.selectionStart;
-    const end = textareaRef.selectionEnd;
-    const selectedText = description.substring(start, end);
-    
-    // Skip if no text is selected
-    if (start === end) return;
-    
-    const newText = description.substring(0, start) + 
-                   `<b>${selectedText}</b>` + 
-                   description.substring(end);
-                   
-    setDescription(newText);
-    
-    // Restore focus after state update
-    setTimeout(() => {
-      if (textareaRef) {
-        textareaRef.focus();
-        textareaRef.setSelectionRange(start, end + 7); // +7 for the <b></b> tags
-      }
-    }, 0);
-  };
-  
-  const preprocessDescription = (text: string) => {
-    // Convert newlines to <br> tags when form is submitted
-    return text.replace(/\n/g, '<br>');
-  };
-  
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDescription(e.target.value);
-  };
-
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
       <div className="space-y-2">
@@ -145,29 +107,11 @@ export function ProductDetails({
       
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor="description" className="text-base">תיאור המוצר</Label>
-        <div className="flex gap-2 mb-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            onClick={addBold}
-            title="הדגש טקסט"
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <p className="text-xs text-muted-foreground">סמן טקסט ולחץ על כפתור ההדגשה. שורות חדשות יישמרו אוטומטית.</p>
-        </div>
-        <Textarea
-          id="description"
-          ref={setTextareaRef}
-          value={description}
-          onChange={handleDescriptionChange}
-          onBlur={() => setDescription(preprocessDescription(description))}
+        <RichTextEditor 
+          value={description} 
+          onChange={setDescription} 
           placeholder="הזן תיאור מוצר"
-          rows={6}
-          className="text-base"
         />
-        <p className="text-xs text-muted-foreground mt-1">ניתן להדגיש טקסט, וגם להוסיף שורות חדשות.</p>
       </div>
     </div>
   );
