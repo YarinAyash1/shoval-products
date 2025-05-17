@@ -91,11 +91,11 @@ export function ProductDetails({ id }: ProductDetailsProps) {
         <Link href="/" className="hover:underline">
           קטלוג
         </Link>
-        <ChevronRight className="h-4 w-4 mx-2" />
+        <ChevronLeft className="h-4 w-4 mx-2" />
         {product.category && (
           <>
             <span>{product.category.name}</span>
-            <ChevronRight className="h-4 w-4 mx-2" />
+            <ChevronLeft className="h-4 w-4 mx-2" />
           </>
         )}
         <span className="font-medium text-foreground">{product.name}</span>
