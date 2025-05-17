@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Package, Tag, LogOut, Menu, X, Loader2, Home, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Tag, LogOut, Loader2, Home, Settings, HomeIcon } from 'lucide-react';
 
 export default function AdminDashboardLayout({
   children,
@@ -65,6 +65,11 @@ export default function AdminDashboardLayout({
       label: 'הגדרות',
       href: '/admin/dashboard/settings',
       icon: Settings,
+    },
+    {
+      label: 'לקטלוג',
+      href: '/',
+      icon: HomeIcon, 
     },
   ];
 

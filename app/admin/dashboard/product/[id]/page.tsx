@@ -322,8 +322,8 @@ export default function ProductFormPage({ params }: PageParams) {
             onClick={() => router.push('/admin/dashboard/product')}
             className="flex items-center gap-2 w-full sm:w-auto"
           >
-            חזרה לרשימת המוצרים
             <ArrowRight className="h-4 w-4 mr-1" />
+            חזרה לרשימת המוצרים
           </Button>
           {!isNewProduct && (
             <Button 
