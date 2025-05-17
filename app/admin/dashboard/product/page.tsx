@@ -68,7 +68,7 @@ function ProductCard({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-4 w-4" />  
               <span className="sr-only">תפריט</span>
             </Button>
           </DropdownMenuTrigger>
@@ -209,9 +209,9 @@ export default function ProductsPage() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden border">
-                        {product.image_url ? (
+                        {product.image_urls[0] ? (
                           <Image
-                            src={product.image_url}
+                            src={product.image_urls[0]}
                             alt={product.name}
                             width={48}
                             height={48}
