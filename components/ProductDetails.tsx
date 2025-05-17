@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronRight, Share2, Phone } from 'lucide-react';
+import { ChevronRight, Share2, Phone, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Card, 
@@ -12,6 +12,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { getProductById, getSettings, type Product, type Settings } from '@/lib/supabase';
+import DOMPurify from 'dompurify';
 
 interface ProductDetailsProps {
   id: string;
@@ -103,16 +104,63 @@ export function ProductDetails({ id }: ProductDetailsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="aspect-square relative overflow-hidden rounded-lg border">
+          <div className="aspect-square relative overflow-hidden rounded-xl border bg-gray-50 shadow-sm">
             {product.image_urls && product.image_urls.length > 0 ? (
-              <Image
-                src={product.image_urls[currentImage]}
-                alt={product.name}
-                className="object-contain w-full h-full"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+              <>
+                <div className="relative h-full w-full">
+                  {product.image_urls.map((url, idx) => (
+                    <div 
+                      key={idx}
+                      className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+                        currentImage === idx ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <Image
+                        src={url}
+                        alt={`${product.name} - תמונה ${idx + 1}`}
+                        className="object-contain w-full h-full p-2"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority={idx === 0}
+                      />
+                    </div>
+                  ))}
+                </div>
+                {product.image_urls.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentImage((prev) => (prev === 0 ? product.image_urls!.length - 1 : prev - 1))}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-all z-10"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentImage((prev) => (prev === product.image_urls!.length - 1 ? 0 : prev + 1))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-all z-10"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-5 w-5 text-gray-700" />
+                    </button>
+                    
+                    {/* Slide indicators */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                      {product.image_urls.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImage(idx)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            currentImage === idx 
+                              ? 'bg-primary w-4' 
+                              : 'bg-gray-400 bg-opacity-70 hover:bg-opacity-100'
+                          }`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground">אין תמונה</span>
@@ -122,25 +170,29 @@ export function ProductDetails({ id }: ProductDetailsProps) {
 
           {/* Thumbnail Images */}
           {product.image_urls && product.image_urls.length > 1 && (
-            <div className="flex overflow-x-auto gap-2 pb-2">
-              {product.image_urls.map((url, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImage(index)}
-                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border ${
-                    currentImage === index ? 'ring-2 ring-primary' : ''
-                  }`}
-                  type="button"
-                >
-                  <Image
-                    src={url}
-                    alt={`${product.name} - תמונה ${index + 1}`}
-                    fill
-                    sizes="80px"
-                    className="object-contain w-full h-full"
-                  />
-                </button>
-              ))}
+            <div className="relative">
+              <div className="flex overflow-x-auto gap-3 pb-2 px-1 pt-4">
+                {product.image_urls.map((url, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImage(index)}
+                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border transition-all ${
+                      currentImage === index 
+                        ? 'ring-2 ring-primary border-primary shadow-md scale-105' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    type="button"
+                  >
+                    <Image
+                      src={url}
+                      alt={`${product.name} - תמונה ${index + 1}`}
+                      fill
+                      sizes="80px"
+                      className="object-contain w-full h-full p-1"
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -169,7 +221,15 @@ export function ProductDetails({ id }: ProductDetailsProps) {
           {product.description && (
             <div>
               <h2 className="text-lg font-semibold mb-2">תיאור המוצר</h2>
-              <p className="text-muted-foreground whitespace-pre-line">{product.description}</p>
+              <div 
+                className="text-muted-foreground"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(product.description, { 
+                    ALLOWED_TAGS: ['b', 'p', 'br'], 
+                    ALLOWED_ATTR: []  
+                  }) 
+                }}
+              />
             </div>
           )}
 
