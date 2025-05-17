@@ -7,8 +7,8 @@ import { ToastProvider } from '@/components/ui/use-toast';
 const heebo = Heebo({ subsets: ['latin', 'hebrew'] });
 
 export const metadata: Metadata = {
-  title: 'קטלוג מוצרים | שובל לשלטי מתכת',
-  description: 'קטלוג מוצרים לחברת שובל לשלטי מתכת',
+  title: 'קטלוג מוצרים | שובל חכם',
+  description: 'קטלוג מוצרים - שובל חכם',
 };
 
 export default function RootLayout({
