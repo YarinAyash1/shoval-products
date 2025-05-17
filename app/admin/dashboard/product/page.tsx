@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   getProducts, 
   deleteProduct, 
@@ -33,7 +34,79 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
-import { Plus, MoreVertical, Pencil, Trash, Search } from 'lucide-react';
+import { Plus, MoreVertical, Pencil, Trash, Search, Image as ImageIcon } from 'lucide-react';
+
+// Responsive Card for mobile
+function ProductCard({
+  product,
+  onEdit,
+  onDelete,
+}: {
+  product: Product;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="border rounded-lg p-4 mb-3 bg-card shadow-sm flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-16 h-16 rounded-md bg-muted flex items-center justify-center overflow-hidden border">
+          {product.image_urls ? (
+            <Image
+              src={product.image_urls[0]}
+              alt={product.name}
+              width={64}
+              height={64}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <ImageIcon className="w-8 h-8 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex-1 flex flex-col gap-1">
+          <div className="font-bold text-base">{product.name}</div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">תפריט</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/dashboard/product/${product.id}`}>
+                <Pencil className="ml-2 h-4 w-4" /> ערוך
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-destructive focus:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash className="ml-2 h-4 w-4" /> מחק
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div className="flex flex-col gap-2 mt-2 text-sm text-muted-foreground">
+        <div>
+          <span className="font-medium text-foreground">מחיר:</span>
+          <br />
+          ₪{product.price.toLocaleString()}
+        </div>
+        <div>
+          <span className="font-medium text-foreground">קטגוריה:</span>
+          <br />
+          {product.category?.name || '-'}
+        </div>
+        <div>
+          <span className="font-medium text-foreground">מותג:</span>
+          <br />
+          {product.brand?.name || '-'}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -85,22 +158,22 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">ניהול מוצרים</h1>
-        <Button asChild>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ניהול מוצרים</h1>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/dashboard/product/new">
             <Plus className="ml-2 h-4 w-4" /> הוסף מוצר
           </Link>
         </Button>
       </div>
 
-      <div className="flex items-center border rounded-md px-3 py-2 max-w-sm">
+      <div className="flex items-center border rounded-md px-3 py-2 max-w-full sm:max-w-sm">
         <Search className="ml-2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="חיפוש מוצרים..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-0 p-0 shadow-none focus-visible:ring-0"
+          className="border-0 p-0 shadow-none focus-visible:ring-0 bg-transparent"
         />
       </div>
 
@@ -117,52 +190,92 @@ export default function ProductsPage() {
           </Button>
         </div>
       ) : (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>שם המוצר</TableHead>
-                <TableHead>מחיר</TableHead>
-                <TableHead>קטגוריה</TableHead>
-                <TableHead>מותג</TableHead>
-                <TableHead className="w-[80px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>₪{product.price.toLocaleString()}</TableCell>
-                  <TableCell>{product.category?.name || '-'}</TableCell>
-                  <TableCell>{product.brand?.name || '-'}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">תפריט</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/dashboard/product/${product.id}`}>
-                            <Pencil className="ml-2 h-4 w-4" /> ערוך
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => confirmDelete(product.id)}
-                        >
-                          <Trash className="ml-2 h-4 w-4" /> מחק
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden sm:block border rounded-md overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>תמונה</TableHead>
+                  <TableHead>שם המוצר</TableHead>
+                  <TableHead>מחיר</TableHead>
+                  <TableHead>קטגוריה</TableHead>
+                  <TableHead>מותג</TableHead>
+                  <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden border">
+                        {product.image_url ? (
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            width={48}
+                            height={48}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>
+                      ₪{product.price.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      {product.category?.name || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {product.brand?.name || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">תפריט</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/dashboard/product/${product.id}`}>
+                              <Pencil className="ml-2 h-4 w-4" /> ערוך
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => confirmDelete(product.id)}
+                          >
+                            <Trash className="ml-2 h-4 w-4" /> מחק
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile Cards */}
+          <div className="block sm:hidden">
+            {filteredProducts.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">לא נמצאו מוצרים</div>
+            ) : (
+              filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={() => window.location.href = `/admin/dashboard/product/${product.id}`}
+                  onDelete={() => confirmDelete(product.id)}
+                />
+              ))
+            )}
+          </div>
+        </>
       )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

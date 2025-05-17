@@ -50,7 +50,7 @@ export default function AdminLayout({
     <div className="h-full flex flex-col sm:flex-row">
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-y-auto">
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 px-0">{children}</main>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ interface ProductFilters {
   searchTerm: string;
   selectedCategory: string;
   selectedBrand: string;
-  priceRange: { min: number; max: number };
 }
 
 export default function Home() {
@@ -25,7 +24,6 @@ export default function Home() {
     searchTerm: '',
     selectedCategory: 'all',
     selectedBrand: 'all',
-    priceRange: { min: 0, max: 1000000 },
   });
 
   useEffect(() => {
@@ -64,17 +62,20 @@ export default function Home() {
     const matchesBrand = filters.selectedBrand === 'all' || 
       product.brand_id === filters.selectedBrand;
     
-    // Filter by price range
-    const matchesPrice = 
-      product.price >= filters.priceRange.min && 
-      product.price <= filters.priceRange.max;
-    
-    return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
+    return matchesSearch && matchesCategory && matchesBrand;
   });
 
   // Update filters
   const handleFilterChange = (newFilters: ProductFilters) => {
-    setFilters(newFilters);
+    
+    // Ensure we're setting clean default values when filters are cleared
+    const cleanFilters = {
+      searchTerm: newFilters.searchTerm,
+      selectedCategory: newFilters.selectedCategory,
+      selectedBrand: newFilters.selectedBrand,
+    };
+    
+    setFilters(cleanFilters);
   };
 
   return (
@@ -87,6 +88,7 @@ export default function Home() {
         brands={brands}
         onFilterChange={handleFilterChange}
         defaultFilters={filters}
+        productsCount={filteredProducts.length}
       />
       
       {/* Products grid */}
@@ -101,12 +103,14 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <p className="text-lg text-muted-foreground mb-4">לא נמצאו מוצרים מתאימים</p>
           <Button 
-            onClick={() => setFilters({
-              searchTerm: '',
-              selectedCategory: 'all',
-              selectedBrand: 'all',
-              priceRange: { min: 0, max: 1000000 }
-            })}
+            onClick={() => {
+              const cleanFilters = {
+                searchTerm: '',
+                selectedCategory: 'all',
+                selectedBrand: 'all',
+              };
+              setFilters(cleanFilters);
+            }}
           >
             נקה מסננים
           </Button>

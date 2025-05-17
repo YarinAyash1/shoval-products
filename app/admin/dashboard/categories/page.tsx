@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   getCategories, 
   getBrands, 
@@ -95,6 +95,21 @@ export default function CategoriesPage() {
     id: '',
     name: '',
   });
+
+  // For focusing input on edit
+  const editCategoryInputRef = useRef<HTMLInputElement>(null);
+  const editBrandInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingCategory && editCategoryInputRef.current) {
+      editCategoryInputRef.current.focus();
+    }
+  }, [editingCategory]);
+  useEffect(() => {
+    if (editingBrand && editBrandInputRef.current) {
+      editBrandInputRef.current.focus();
+    }
+  }, [editingBrand]);
 
   // Fetch data
   useEffect(() => {
@@ -249,11 +264,16 @@ export default function CategoriesPage() {
     }
   };
 
+  // Responsive table: stack on mobile
+  const tableWrapperClass = "rounded-md overflow-x-auto text-right p-4";
+  const tableClass = "min-w-full";
+  const tableCellClass = "py-4 font-medium break-words max-w-xs";
+
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
+    <div className="space-y-8 max-w-6xl mx-auto pb-12 px-2 sm:px-0">
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">ניהול קטגוריות ומותגים</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ניהול קטגוריות ומותגים</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           נהל את קטגוריות המוצרים והמותגים בחנות שלך
         </p>
       </div>
@@ -270,13 +290,13 @@ export default function CategoriesPage() {
           {/* Add Category Form */}
           <Card className="shadow-sm border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-bold">הוספת קטגוריה חדשה</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">הוספת קטגוריה חדשה</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 קטגוריות עוזרות לארגן מוצרים בחנות שלך ולהקל על הלקוחות למצוא את מה שהם מחפשים
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddCategory} className="flex gap-4 items-end">
+              <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
                 <div className="flex-1">
                   <Label htmlFor="new-category" className="text-sm font-medium">שם הקטגוריה</Label>
                   <Input
@@ -290,8 +310,9 @@ export default function CategoriesPage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="flex gap-2 items-center"
+                  className="flex gap-2 items-center w-full sm:w-auto mt-2 sm:mt-0"
                   disabled={isSubmitting || !newCategoryName.trim()}
+                  size="lg"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -314,8 +335,8 @@ export default function CategoriesPage() {
           {/* Categories Table */}
           <Card className="shadow-sm border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-bold">קטגוריות</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">קטגוריות</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 רשימת כל הקטגוריות הזמינות בחנות שלך
               </CardDescription>
             </CardHeader>
@@ -334,8 +355,8 @@ export default function CategoriesPage() {
                   </p>
                 </div>
               ) : (
-                <div className="rounded-md overflow-hidden text-right p-4">
-                  <Table>
+                <div className={tableWrapperClass}>
+                  <Table className={tableClass}>
                     <TableHeader>
                       <TableRow className="hover:bg-muted bg-muted/50">
                         <TableHead className="font-medium">שם הקטגוריה</TableHead>
@@ -345,62 +366,99 @@ export default function CategoriesPage() {
                     <TableBody>
                       {categories.map((category) => (
                         <TableRow key={category.id} className="transition-colors">
-                          <TableCell className="py-4 font-medium">
+                          <TableCell className={tableCellClass}>
                             {editingCategory === category.id ? (
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2 w-full">
                                 <Input
+                                  ref={editCategoryInputRef}
                                   value={editingCategoryName}
                                   onChange={(e) => setEditingCategoryName(e.target.value)}
-                                  className="max-w-xs"
+                                  className="max-w-xs w-full"
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      saveEditCategory(category.id);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      cancelEditCategory();
+                                    }
+                                  }}
                                 />
-                                <Button 
-                                  size="icon" 
-                                  variant="outline" 
-                                  onClick={() => saveEditCategory(category.id)}
-                                  disabled={isSubmitting}
-                                >
-                                  {isSubmitting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Save className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button 
-                                  size="icon" 
-                                  variant="outline" 
-                                  onClick={cancelEditCategory}
-                                  disabled={isSubmitting}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
+                                <div className="flex gap-2 mt-2 sm:mt-0">
+                                  <Button 
+                                    size="icon" 
+                                    variant="outline" 
+                                    onClick={() => saveEditCategory(category.id)}
+                                    disabled={isSubmitting}
+                                    aria-label="שמור"
+                                  >
+                                    {isSubmitting ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Save className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="outline" 
+                                    onClick={cancelEditCategory}
+                                    disabled={isSubmitting}
+                                    aria-label="ביטול"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
-                              category.name
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate">{category.name}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="sm:hidden"
+                                  aria-label="ערוך"
+                                  onClick={() => startEditCategory(category)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                           <TableCell>
                             {editingCategory !== category.id && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    onClick={() => startEditCategory(category)}
-                                    className="flex items-center gap-2 cursor-pointer"
-                                  >
-                                    <Pencil className="h-4 w-4" /> ערוך
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => openDeleteDialog('category', category.id, category.name)}
-                                    className="flex items-center gap-2 text-destructive cursor-pointer"
-                                  >
-                                    <Trash className="h-4 w-4" /> מחק
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <div className="flex justify-end">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => startEditCategory(category)}
+                                      className="flex items-center gap-2 cursor-pointer"
+                                    >
+                                      <Pencil className="h-4 w-4" /> ערוך
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => openDeleteDialog('category', category.id, category.name)}
+                                      className="flex items-center gap-2 text-destructive cursor-pointer"
+                                    >
+                                      <Trash className="h-4 w-4" /> מחק
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                {/* On mobile, show delete as icon */}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="sm:hidden ml-2"
+                                  aria-label="מחק"
+                                  onClick={() => openDeleteDialog('category', category.id, category.name)}
+                                >
+                                  <Trash className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
@@ -417,13 +475,13 @@ export default function CategoriesPage() {
           {/* Add Brand Form */}
           <Card className="shadow-sm border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-bold">הוספת מותג חדש</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">הוספת מותג חדש</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 ניהול מותגים בחנות מאפשר ללקוחות לסנן ולחפש מוצרים לפי מותג מועדף
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddBrand} className="flex gap-4 items-end">
+              <form onSubmit={handleAddBrand} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
                 <div className="flex-1">
                   <Label htmlFor="new-brand" className="text-sm font-medium">שם המותג</Label>
                   <Input
@@ -437,8 +495,9 @@ export default function CategoriesPage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="flex gap-2 items-center"
+                  className="flex gap-2 items-center w-full sm:w-auto mt-2 sm:mt-0"
                   disabled={isSubmitting || !newBrandName.trim()}
+                  size="lg"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -461,8 +520,8 @@ export default function CategoriesPage() {
           {/* Brands Table */}
           <Card className="shadow-sm border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="text-xl font-bold">מותגים</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl font-bold">מותגים</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 רשימת כל המותגים הזמינים בחנות שלך
               </CardDescription>
             </CardHeader>
@@ -481,8 +540,8 @@ export default function CategoriesPage() {
                   </p>
                 </div>
               ) : (
-                <div className="rounded-md overflow-hidden">
-                  <Table>
+                <div className={tableWrapperClass}>
+                  <Table className={tableClass}>
                     <TableHeader>
                       <TableRow className="hover:bg-muted bg-muted/50">
                         <TableHead className="font-medium">שם המותג</TableHead>
@@ -492,62 +551,99 @@ export default function CategoriesPage() {
                     <TableBody>
                       {brands.map((brand) => (
                         <TableRow key={brand.id} className="transition-colors">
-                          <TableCell className="py-4 font-medium">
+                          <TableCell className={tableCellClass}>
                             {editingBrand === brand.id ? (
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2 w-full">
                                 <Input
+                                  ref={editBrandInputRef}
                                   value={editingBrandName}
                                   onChange={(e) => setEditingBrandName(e.target.value)}
-                                  className="max-w-xs"
+                                  className="max-w-xs w-full"
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      saveEditBrand(brand.id);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      cancelEditBrand();
+                                    }
+                                  }}
                                 />
-                                <Button 
-                                  size="icon" 
-                                  variant="outline" 
-                                  onClick={() => saveEditBrand(brand.id)}
-                                  disabled={isSubmitting}
-                                >
-                                  {isSubmitting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Save className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button 
-                                  size="icon" 
-                                  variant="outline" 
-                                  onClick={cancelEditBrand}
-                                  disabled={isSubmitting}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
+                                <div className="flex gap-2 mt-2 sm:mt-0">
+                                  <Button 
+                                    size="icon" 
+                                    variant="outline" 
+                                    onClick={() => saveEditBrand(brand.id)}
+                                    disabled={isSubmitting}
+                                    aria-label="שמור"
+                                  >
+                                    {isSubmitting ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Save className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="outline" 
+                                    onClick={cancelEditBrand}
+                                    disabled={isSubmitting}
+                                    aria-label="ביטול"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
-                              brand.name
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate">{brand.name}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="sm:hidden"
+                                  aria-label="ערוך"
+                                  onClick={() => startEditBrand(brand)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                           <TableCell>
                             {editingBrand !== brand.id && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    onClick={() => startEditBrand(brand)}
-                                    className="flex items-center gap-2 cursor-pointer"
-                                  >
-                                    <Pencil className="h-4 w-4" /> ערוך
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => openDeleteDialog('brand', brand.id, brand.name)}
-                                    className="flex items-center gap-2 text-destructive cursor-pointer"
-                                  >
-                                    <Trash className="h-4 w-4" /> מחק
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <div className="flex justify-end">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => startEditBrand(brand)}
+                                      className="flex items-center gap-2 cursor-pointer"
+                                    >
+                                      <Pencil className="h-4 w-4" /> ערוך
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => openDeleteDialog('brand', brand.id, brand.name)}
+                                      className="flex items-center gap-2 text-destructive cursor-pointer"
+                                    >
+                                      <Trash className="h-4 w-4" /> מחק
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                {/* On mobile, show delete as icon */}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="sm:hidden ml-2"
+                                  aria-label="מחק"
+                                  onClick={() => openDeleteDialog('brand', brand.id, brand.name)}
+                                >
+                                  <Trash className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>

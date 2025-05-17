@@ -119,6 +119,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Varela Round', 'Assistant', Arial, sans-serif;
+
   }
 }

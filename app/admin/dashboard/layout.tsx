@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Package, Tag, LogOut, Menu, X, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Package, Tag, LogOut, Menu, X, Loader2, Home } from 'lucide-react';
 
 export default function AdminDashboardLayout({
   children,
@@ -29,6 +29,21 @@ export default function AdminDashboardLayout({
   useEffect(() => {
     setIsMobileNavOpen(false);
   }, [pathname]);
+  
+  // Close mobile nav when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isMobileNavOpen && !target.closest('.mobile-nav') && !target.closest('.mobile-nav-toggle')) {
+        setIsMobileNavOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileNavOpen]);
 
   const navItems = [
     {
@@ -76,50 +91,45 @@ export default function AdminDashboardLayout({
 
   return (
     <div className="h-full flex flex-col sm:flex-row">
-      {/* Mobile Nav Toggle */}
-      <div className="flex items-center justify-between p-4 border-b sm:hidden">
-        <h1 className="text-lg font-semibold">ניהול קטלוג</h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-        >
-          {isMobileNavOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </Button>
-      </div>
+
+
+      {/* Sidebar for mobile - overlay */}
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 bg-black/20 z-30 sm:hidden" onClick={() => setIsMobileNavOpen(false)} />
+      )}
 
       {/* Sidebar */}
       <div
-        className={`border-l bg-card w-full sm:w-64 flex-shrink-0 ${
-          isMobileNavOpen ? 'block' : 'hidden'
-        } sm:block`}
+        className={`border-l bg-card z-40 mobile-nav
+          ${isMobileNavOpen 
+            ? 'fixed inset-y-0 right-0 w-3/4 max-w-xs shadow-xl transition-transform duration-200 transform translate-x-0' 
+            : 'fixed inset-y-0 right-0 w-3/4 max-w-xs shadow-xl transition-transform duration-200 transform translate-x-full'
+          } 
+          sm:static sm:translate-x-0 sm:w-64 sm:shadow-none sm:block sm:flex-shrink-0`}
       >
-        <div className="p-6">
-          <h1 className="text-xl font-bold hidden sm:block">ניהול קטלוג</h1>
+        <div className="p-6 border-b">
+          <h1 className="text-xl font-bold">ניהול קטלוג</h1>
+          <p className="text-sm text-muted-foreground mt-1">ברוך הבא!</p>
         </div>
 
-        <nav className="space-y-1 px-3">
+        <nav className="space-y-2 p-4 min-h-[calc(100vh-10rem)]">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${
                 pathname === item.href
                   ? 'bg-primary text-primary-foreground'
                   : 'hover:bg-muted'
               }`}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-5 w-5 flex-shrink-0" />
               <span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto p-3 pt-6">
+        <div className="absolute bottom-0 right-0 left-0 p-4 border-t">
           <Button
             variant="outline"
             className="w-full flex items-center justify-center gap-2"
@@ -131,9 +141,27 @@ export default function AdminDashboardLayout({
         </div>
       </div>
 
+      {/* Bottom mobile navigation - visible only on mobile */}
+      <div className="sm:hidden fixed bottom-0 right-0 left-0 z-40 bg-card border-t flex justify-around p-2">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`flex flex-col items-center p-2 rounded-md ${
+              pathname === item.href
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            }`}
+          >
+            <item.icon className="h-5 w-5 mb-1" />
+            <span className="text-xs">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-y-auto">
-        <main className="flex-1 p-6">{children}</main>
+      <div className="flex-1 flex flex-col h-full overflow-y-auto pb-16 sm:pb-0">
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );
